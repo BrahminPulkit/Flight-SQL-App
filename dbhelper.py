@@ -103,3 +103,4 @@ class DB:
             frequnecy.append(iteam[0])
 
         return date, frequnecy
+    
