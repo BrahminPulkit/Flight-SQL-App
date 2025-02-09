@@ -2,18 +2,15 @@ import mysql.connector
 
 class DB:
     def __init__(self):
-        # Connect to the database
-
         try:
             self.conn = mysql.connector.connect(
                 host='127.0.0.1',
                 user='root',
-                password='',  # Replace 'your_password' with your actual password
-                database='flight'  # Specify the database name here
+                password='',  # Update this if needed
+                database='flight'
             )
-
             self.mycursor = self.conn.cursor()
-            print('Connection established')
+            print('Database connection established')
 
         except mysql.connector.Error as e:
             print('Connection error:', e)
@@ -21,86 +18,94 @@ class DB:
 
     def fetch_city_names(self):
         city = []
-        self.mycursor.execute("""
-        SELECT DISTINCT(Destination) FROM  flights_data
-        UNION 
-        SELECT DISTINCT(Source) FROM  flights_data;
-    """)
-        
-        data = self.mycursor.fetchall()
+        try:
+            self.mycursor.execute("""
+            SELECT DISTINCT(Destination) FROM flights_data
+            UNION 
+            SELECT DISTINCT(Source) FROM flights_data;
+            """)
 
-        for item in data:
-            city.append(item[0])
+            data = self.mycursor.fetchall()
+            city = [item[0] for item in data]
+        except mysql.connector.Error as e:
+            print("SQL Error in fetch_city_names:", e)
+        
         return city
     
 
     def fetch_all_flights(self, source, destination):
-        self.mycursor.execute("""
-        SELECT Airline, Route, Dep_Time, Duration, Price FROM flights_data
-        WHERE Source = '{}' AND Destination = '{}'
-        """.format(source, destination))
+        try:
+            self.mycursor.execute("""
+            SELECT Airline, Route, Dep_Time, Duration, Price FROM flights_data
+            WHERE Source = %s AND Destination = %s
+            """, (source, destination))
 
-
-        data = self.mycursor.fetchall()
-        return data
+            return self.mycursor.fetchall()
+        except mysql.connector.Error as e:
+            print("SQL Error in fetch_all_flights:", e)
+            return []
     
 
     def fetch_airline_frequency(self):
-
         airline = []
-        frequnecy = []
+        frequency = []
+        try:
+            self.mycursor.execute("""
+            SELECT Airline, COUNT(*) FROM flights_data
+            GROUP BY Airline
+            """)
 
-        self.mycursor.execute("""
-        SELECT Airline, COUNT(*) FROM flights_data
-        GROUP BY Airline
-        """)
+            data = self.mycursor.fetchall()
+            for item in data:
+                airline.append(item[0])
+                frequency.append(item[1])
 
-        data = self.mycursor.fetchall()
+        except mysql.connector.Error as e:
+            print("SQL Error in fetch_airline_frequency:", e)
         
-        for iteam in data:
-            airline.append(iteam[0])
-            frequnecy.append(iteam[1])
-
-        return airline, frequnecy
+        return airline, frequency
                               
-        
 
     def busy_airport(self):
         city = []
-        frequnecy = []
-        self.mycursor.execute("""
+        frequency = []
+        try:
+            self.mycursor.execute("""
+            SELECT Source, COUNT(*) FROM (
+                SELECT Source FROM flights_data
+                UNION ALL
+                SELECT Destination FROM flights_data
+            ) t
+            GROUP BY t.Source
+            ORDER BY COUNT(*) DESC
+            """)
 
-        SELECT Source, COUNT(*) From (SELECT Source From flights_data
-								UNION ALL
-								SELECT Destination From flights_data) t
-        GROUP BY t.Source
-        ORDER BY COUNT(*) DESC
-        """)
+            data = self.mycursor.fetchall()
+            for item in data:
+                city.append(item[0])
+                frequency.append(item[1])  # Fixed
 
-        data = self.mycursor.fetchall()
+        except mysql.connector.Error as e:
+            print("SQL Error in busy_airport:", e)
 
-        for iteam in data:
-            city.append(iteam[0])
-            frequnecy.append(iteam[0])
-
-        return city, frequnecy
+        return city, frequency
     
-
 
     def daily_frequency(self):
         date = []
-        frequnecy = []
-        self.mycursor.execute("""
+        frequency = []
+        try:
+            self.mycursor.execute("""
+            SELECT Date_of_Journey, COUNT(*) FROM flights_data
+            GROUP BY Date_of_Journey
+            """)
 
-        SELECT  Date_of_Journey, COUNT(*) FROM flights_data
-        GROUP BY Date_of_Journey
-        """)
+            data = self.mycursor.fetchall()
+            for item in data:
+                date.append(item[0])
+                frequency.append(item[1])  # Fixed
 
-        data = self.mycursor.fetchall()
+        except mysql.connector.Error as e:
+            print("SQL Error in daily_frequency:", e)
 
-        for iteam in data:
-            date.append(iteam[0])
-            frequnecy.append(iteam[0])
-
-        return date, frequnecy
-    
+        return date, frequency
