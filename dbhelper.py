@@ -1,13 +1,14 @@
+import os
 import mysql.connector
 
 class DB:
     def __init__(self):
         try:
             self.conn = mysql.connector.connect(
-                host='127.0.0.1',
-                user='root',
-                password='',  # Update this if needed
-                database='flight'
+                host=os.environ.get('MYSQL_HOST', '127.0.0.1'),
+                user=os.environ.get('MYSQL_USER', 'root'),
+                password=os.environ['MYSQL_PASSWORD'],
+                database=os.environ.get('MYSQL_DATABASE', 'flight')
             )
             self.mycursor = self.conn.cursor()
             print('Database connection established')
@@ -29,9 +30,9 @@ class DB:
             city = [item[0] for item in data]
         except mysql.connector.Error as e:
             print("SQL Error in fetch_city_names:", e)
-        
+
         return city
-    
+
 
     def fetch_all_flights(self, source, destination):
         try:
@@ -44,7 +45,7 @@ class DB:
         except mysql.connector.Error as e:
             print("SQL Error in fetch_all_flights:", e)
             return []
-    
+
 
     def fetch_airline_frequency(self):
         airline = []
@@ -62,9 +63,9 @@ class DB:
 
         except mysql.connector.Error as e:
             print("SQL Error in fetch_airline_frequency:", e)
-        
+
         return airline, frequency
-                              
+
 
     def busy_airport(self):
         city = []
@@ -89,7 +90,7 @@ class DB:
             print("SQL Error in busy_airport:", e)
 
         return city, frequency
-    
+
 
     def daily_frequency(self):
         date = []

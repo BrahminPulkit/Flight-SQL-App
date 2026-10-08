@@ -1,12 +1,13 @@
+import os
 import mysql.connector
 
 # Connect to the database server
 try:
     conn = mysql.connector.connect(
-        host='127.0.0.1',
-        user='root',
-        password='',  # Replace 'your_password' with your actual password
-        database='indigo'  # Specify the database name here
+        host=os.environ.get('MYSQL_HOST', '127.0.0.1'),
+        user=os.environ.get('MYSQL_USER', 'root'),
+        password=os.environ['MYSQL_PASSWORD'],
+        database=os.environ.get('MYSQL_DATABASE', 'indigo')
     )
 
     mycursor = conn.cursor()
@@ -83,4 +84,3 @@ print(data)
 
 for i in data:
     print(i[3])
-    
