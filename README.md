@@ -59,3 +59,14 @@ to launch the dashboard. Set `MYSQL_DATABASE` explicitly before using it.
 [Flight SQL Case Study](https://github.com/BrahminPulkit/flight-sql-case-study)
 contains date-time and route-analysis exercises. Its table is named `flights`;
 the dashboard expects `flights_data`, so adapt your import accordingly.
+
+## Connection and query smoke checks
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Two database-independent checks validate environment-based connection settings
+and parameterized route inputs. They mock the connector and do not verify a live
+MySQL instance. The Python dependency set was installed in a clean environment;
+a complete dashboard run still requires the external flight dataset/database.
